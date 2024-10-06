@@ -63,6 +63,8 @@ flutter:
   assets:
     - assets/stick_game_background.png
     - assets/stick_game_lose_background.png
+    - assets/arrow_game_background.png
+    
     - assets/sounds/stick_sound.mp3
     - assets/sounds/bang_sound.mp3
     

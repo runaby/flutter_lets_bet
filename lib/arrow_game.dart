@@ -9,16 +9,14 @@ class ArrowGame extends StatefulWidget {
 
 class _ArrowGameState extends State<ArrowGame> with SingleTickerProviderStateMixin {
   double _angle = 0.0; // 화살표의 현재 각도
-  bool _isSpinning = true; // 처음에는 회전 중인 상태
-  bool _isSlowingDown = false; // 속도가 줄어드는지 여부
+  bool _isSpinning = false; // 현재 회전 중인지 여부
   Timer? _timer;
-  double _spinSpeed = 0.05; // 기본 회전 속도
-
-  @override
-  void initState() {
-    super.initState();
-    _startSpinning(); // 게임 시작 시 화살표 회전 시작
-  }
+  double _spinSpeed = 0.0; // 회전 속도
+  double _remainingAngle = 0.0; // 남은 회전 각도
+  final Random _random = Random();
+  int _spinCount = 0; // 현재까지 회전한 횟수
+  final int _maxSpins = 10; // 최대 회전 횟수
+  Color _arrowColor = Colors.red; // 화살표 색상
 
   @override
   void dispose() {
@@ -26,49 +24,59 @@ class _ArrowGameState extends State<ArrowGame> with SingleTickerProviderStateMix
     super.dispose();
   }
 
-  // 화살표 회전을 시작하는 함수
-  void _startSpinning() {
-    _timer = Timer.periodic(Duration(milliseconds: 16), (timer) {
-      if (_isSpinning || _isSlowingDown) {
-        setState(() {
-          _angle += _spinSpeed; // 화살표가 현재 속도로 회전
-        });
-      }
-    });
+  // 랜덤한 색상 생성
+  Color _generateRandomColor() {
+    return Color.fromARGB(
+      255,
+      _random.nextInt(256),
+      _random.nextInt(256),
+      _random.nextInt(256),
+    );
   }
 
-  // 터치 시 빠르게 돌다가 천천히 멈추는 함수
-  void _stopSpinning() {
-    _isSpinning = false;
-    _isSlowingDown = true;
-    double slowDownFactor = 0.98; // 속도를 천천히 줄이는 정도
-    double minSpeed = 0.001; // 멈출 때 최소 속도
+  // 터치 시 빠르게 10~15바퀴 돌다가 천천히 멈추는 함수
+  void _onTap() {
+    if (_spinCount < _maxSpins) {
+      if (!_isSpinning) {
+        setState(() {
+          _spinSpeed = 1.0; // 빠르게 회전 시작
+          _isSpinning = true;
+          _spinCount += 1; // 회전 횟수 증가
+        });
+        int randomRounds = 10 + _random.nextInt(6); // 10 ~ 15바퀴 랜덤
+        _remainingAngle = 2 * pi * randomRounds + _random.nextDouble() * 2 * pi; // 회전 각도 계산
+        _startSpinning();
+      } else {
+        // 이미 회전 중일 때, 더 돌게 각도를 추가
+        int extraRounds = 5 + _random.nextInt(6); // 추가로 5 ~ 10바퀴 더 돌기
+        _remainingAngle += 2 * pi * extraRounds + _random.nextDouble() * 2 * pi;
+        _spinCount += 1; // 회전 횟수 증가
+      }
+    }
+  }
 
-    _timer?.cancel(); // 기존 타이머 중지
+  // 빠르게 회전하다가 천천히 멈추기
+  void _startSpinning() {
+    double slowDownFactor = 0.97 + _random.nextDouble() * 0.02; // 속도를 천천히 줄이는 비율에 변칙성 추가
+
     _timer = Timer.periodic(Duration(milliseconds: 16), (timer) {
       setState(() {
-        _angle += _spinSpeed; // 계속 회전
-        _spinSpeed *= slowDownFactor; // 회전 속도를 점점 줄임
+        _angle += _spinSpeed;
+        _remainingAngle -= _spinSpeed;
+        _arrowColor = _generateRandomColor(); // 회전 중 색상 계속 변경
 
-        if (_spinSpeed < minSpeed) {
-          _spinSpeed = 0.0; // 멈추기
-          _isSlowingDown = false; // 회전 종료
-          timer.cancel(); // 타이머 중지
+        if (_remainingAngle <= 0) {
+          _spinSpeed *= slowDownFactor; // 천천히 멈추게 하기
+
+          if (_spinSpeed < 0.01) {
+            _spinSpeed = 0.0;
+            _isSpinning = false;
+            _spinCount = 0; // 회전 횟수 초기화
+            timer.cancel(); // 회전 멈추기
+          }
         }
       });
     });
-  }
-
-  // 터치 시 빠르게 돌기 시작하는 함수
-  void _onTap() {
-    if (!_isSpinning && !_isSlowingDown) {
-      _spinSpeed = 0.5; // 빠르게 돌기 시작
-      _isSpinning = true; // 다시 회전 상태로 설정
-      _startSpinning(); // 회전 시작
-      Future.delayed(Duration(milliseconds: 500), () {
-        _stopSpinning(); // 빠르게 돌다가 천천히 멈추기
-      });
-    }
   }
 
   @override
@@ -79,14 +87,24 @@ class _ArrowGameState extends State<ArrowGame> with SingleTickerProviderStateMix
       ),
       body: GestureDetector(
         onTap: _onTap, // 터치 시 동작
-        child: Center(
-          child: Transform.rotate(
-            angle: _angle, // 화살표의 현재 각도에 따라 회전
-            child: Container(
-              width: 200, // 화살표 크기를 200으로 확대
-              height: 200, // 화살표 크기를 200으로 확대
-              child: CustomPaint(
-                painter: ArrowPainter(), // 화살표 그리기
+        child: Container(
+          width: double.infinity, // 화면 전체 너비
+          height: double.infinity, // 화면 전체 높이
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/arrow_game_background.png'), // 배경 이미지 경로
+              fit: BoxFit.cover, // 배경 이미지를 화면에 맞춤
+            ),
+          ),
+          child: Center(
+            child: Transform.rotate(
+              angle: _angle, // 화살표 각도
+              child: Container(
+                width: 300, // 화살표 크기 확대
+                height: 300, // 화살표 크기 확대
+                child: CustomPaint(
+                  painter: ArrowPainter(_arrowColor), // 회전 중 색상이 계속 변경됨
+                ),
               ),
             ),
           ),
@@ -96,22 +114,34 @@ class _ArrowGameState extends State<ArrowGame> with SingleTickerProviderStateMix
   }
 }
 
-// 화살표를 그리는 CustomPainter 클래스
+// 화살표를 그리는 CustomPainter 클래스 (색상 계속 변경)
 class ArrowPainter extends CustomPainter {
+  final Color arrowColor;
+
+  ArrowPainter(this.arrowColor); // 화살표 색상을 생성자에서 받음
+
   @override
   void paint(Canvas canvas, Size size) {
     var paint = Paint()
-      ..color = Colors.red
+      ..color = arrowColor // 화살표에 랜덤 색상 적용
+      ..style = PaintingStyle.fill;
+
+    var shadowPaint = Paint()
+      ..color = Colors.black.withOpacity(0.5) // 그림자 효과
       ..style = PaintingStyle.fill;
 
     var path = Path();
     path.moveTo(size.width * 0.5, 0); // 화살표의 머리
-    path.lineTo(size.width * 0.3, size.height * 0.7); // 화살표의 왼쪽
-    path.lineTo(size.width * 0.5, size.height * 0.5); // 화살표의 중앙
-    path.lineTo(size.width * 0.7, size.height * 0.7); // 화살표의 오른쪽
+    path.lineTo(size.width * 0.3, size.height * 0.7); // 화살표 왼쪽
+    path.lineTo(size.width * 0.5, size.height * 0.5); // 화살표 중앙
+    path.lineTo(size.width * 0.7, size.height * 0.7); // 화살표 오른쪽
     path.close();
 
-    canvas.drawPath(path, paint); // 화살표 그리기
+    // 그림자 추가
+    canvas.drawPath(path.shift(Offset(5, 5)), shadowPaint);
+
+    // 화살표 그리기
+    canvas.drawPath(path, paint);
   }
 
   @override
