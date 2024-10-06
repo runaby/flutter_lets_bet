@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lets_bet/arrow_game.dart';
 import 'package:flutter_lets_bet/dice_game.dart';
 import 'stick_game.dart';
 
@@ -68,6 +69,13 @@ class MainScreen extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => DiceGame(), // 주사위 게임
+                      ),
+                    );
+                  }else if (index == 2) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ArrowGame(), // 주사위 게임
                       ),
                     );
                   }
