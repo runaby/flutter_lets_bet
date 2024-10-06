@@ -64,7 +64,10 @@ flutter:
     - assets/stick_game_background.png
     - assets/stick_game_lose_background.png
     - assets/sounds/stick_sound.mp3
+    - assets/sounds/bang_sound.mp3
+    
     - assets/background_image.png
+    - assets/background_main.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

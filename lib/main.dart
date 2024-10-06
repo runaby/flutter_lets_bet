@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Stick Drawing Game',
+      title: 'Mini Game Collection',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -26,43 +26,69 @@ class MainScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Main Screen'),
       ),
-      body: GridView.count(
-        crossAxisCount: 2, // 2개의 아이콘씩 5줄로 배치
-        padding: EdgeInsets.all(20),
-        children: List.generate(10, (index) {
-          return GestureDetector(
-            onTap: () {
-              if (index == 0) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => StickGame(), // initialSticks 전달 없이 생성
-                  ),
-                );
-              }else if (index == 1) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DiceGame(), // initialSticks 전달 없이 생성
-                  ),
-                );
-              }
-            },
-            child: Container(
-              margin: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.blueAccent,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Center(
-                child: Text(
-                  'Game ${index + 1}',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
+      body: Stack(
+        children: [
+          // 배경 이미지
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/background_main.png'), // 배경 이미지 경로
+                fit: BoxFit.cover, // 배경을 화면에 맞추어 조정
               ),
             ),
-          );
-        }),
+          ),
+          GridView.count(
+            crossAxisCount: 2, // 2개의 아이콘씩 5줄로 배치
+            childAspectRatio: 1.2, // 아이템의 가로세로 비율 설정 (가로/세로)
+            padding: EdgeInsets.all(30),
+            children: List.generate(10, (index) {
+              String gameName;
+              switch (index) {
+                case 0:
+                  gameName = '뽑기'; // 1번 아이콘 이름
+                  break;
+                case 1:
+                  gameName = '주사위'; // 2번 아이콘 이름
+                  break;
+                default:
+                  gameName = 'Game ${index + 1}'; // 나머지 임의 이름
+              }
+
+              return GestureDetector(
+                onTap: () {
+                  if (index == 0) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => StickGame(), // 뽑기 게임
+                      ),
+                    );
+                  } else if (index == 1) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DiceGame(), // 주사위 게임
+                      ),
+                    );
+                  }
+                },
+                child: Container(
+                  margin: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Text(
+                      gameName,
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ],
       ),
     );
   }
