@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lets_bet/arrow_game.dart';
 import 'package:flutter_lets_bet/dice_game.dart';
+import 'package:flutter_lets_bet/pairing_game.dart';
 import 'stick_game.dart';
 
 void main() {
@@ -71,11 +72,18 @@ class MainScreen extends StatelessWidget {
                         builder: (context) => DiceGame(), // 주사위 게임
                       ),
                     );
-                  }else if (index == 2) {
+                  } else if (index == 2) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => ArrowGame(), // 주사위 게임
+                      ),
+                    );
+                  } else if (index == 3) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PairingGame(), // 주사위 게임
                       ),
                     );
                   }
