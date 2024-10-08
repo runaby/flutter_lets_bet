@@ -14,23 +14,30 @@ class _NumberBoxGameState extends State<NumberBoxGame> {
 
   // 게임 시작 시 설정된 숫자를 상자에 할당
   void _startGame() {
+    print('스타트 게임');
     if (numberOfBoxes != null && numberOfBoxes! > 0) {
       setState(() {
         // 상자 숫자 리스트 생성 및 섞기
         boxNumbers = List.generate(numberOfBoxes!, (index) => index + 1);
         boxNumbers.shuffle(); // 상자에 들어갈 숫자를 랜덤하게 섞음
         isBoxOpened = List.generate(numberOfBoxes!, (index) => false); // 상자 닫힌 상태로 초기화
+        print(boxNumbers.length);
+        print(isBoxOpened.length);
       });
     }
   }
 
   // 상자 클릭 시 숫자 보이기
   void _openBox(int index) {
-    if (index < isBoxOpened.length) {
+    print("오픈박스");
+    print(index);
+    print(isBoxOpened.length);
+    // if (index < isBoxOpened.length) {
+      print("열려라");
       setState(() {
         isBoxOpened[index] = true; // 상자 열림 상태로 변경
       });
-    }
+    // }
   }
 
   @override
