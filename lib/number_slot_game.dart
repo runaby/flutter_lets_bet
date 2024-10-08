@@ -133,6 +133,7 @@ class _NumberSlotMachineGameState extends State<NumberSlotMachineGame> {
                         decoration: BoxDecoration(
                           color: index < selectedNumbers.length ? _getBallColor(selectedNumbers[index]) : Colors.grey[300],
                           shape: BoxShape.circle,
+                          border: Border.all(color: Colors.amberAccent, width: 2), // 금색 테두리 추가
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black26,
@@ -172,15 +173,16 @@ class _NumberSlotMachineGameState extends State<NumberSlotMachineGame> {
                     ),
                   ),
 
-                // 고정된 공 위치 (Spacer 대신 SizedBox 사용) - 반투명
-                SizedBox(height: 80), // 공과 정렬 텍스트 사이의 고정된 공간
+                // 랜덤 공 위치 (반투명) - 고정 위치로 변경
+                Spacer(), // 상단 공간 고정 후 랜덤 공을 밑으로 내림
                 Container(
                   width: 200,
                   height: 200,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: _getBallColor(displayedNumber).withOpacity(0.7), // 반투명 효과 추가
+                    color: _getBallColor(displayedNumber).withOpacity(0.9), // 반투명 효과 추가
                     shape: BoxShape.circle, // 동그라미 모양
+                    // border: Border.all(color: Colors.amberAccent, width: 3), // 금색 테두리 추가
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black54,
@@ -203,8 +205,7 @@ class _NumberSlotMachineGameState extends State<NumberSlotMachineGame> {
                     ),
                   ),
                 ),
-
-                SizedBox(height: 50), // 공과 하단 사이 고정된 공간
+                SizedBox(height: 50), // 랜덤 공과 하단 사이 고정된 공간
 
                 // 하단에 터치 안내
                 Padding(
