@@ -10,19 +10,21 @@ class _NumberBoxGameState extends State<NumberBoxGame> {
   int? numberOfBoxes; // 상자 수 설정
   List<int> boxNumbers = []; // 상자에 들어갈 숫자
   List<bool> isBoxOpened = []; // 상자 열림 상태
+  bool gameStarted = false; // 게임 시작 여부
   Random random = Random();
 
   // 게임 시작 시 설정된 숫자를 상자에 할당
   void _startGame() {
-    print('스타트 게임');
+    print('스타트 게임 실행됨');
     if (numberOfBoxes != null && numberOfBoxes! > 0) {
       setState(() {
         // 상자 숫자 리스트 생성 및 섞기
         boxNumbers = List.generate(numberOfBoxes!, (index) => index + 1);
         boxNumbers.shuffle(); // 상자에 들어갈 숫자를 랜덤하게 섞음
         isBoxOpened = List.generate(numberOfBoxes!, (index) => false); // 상자 닫힌 상태로 초기화
-        print(boxNumbers.length);
-        print(isBoxOpened.length);
+        gameStarted = true; // 게임 시작 상태 변경
+        print("boxNumbers length: ${boxNumbers.length}");
+        print("isBoxOpened length: ${isBoxOpened.length}");
       });
     }
   }
@@ -32,12 +34,15 @@ class _NumberBoxGameState extends State<NumberBoxGame> {
     print("오픈박스");
     print(index);
     print(isBoxOpened.length);
-    // if (index < isBoxOpened.length) {
+    // 배열 범위 확인 후 안전하게 접근
+    if (index < isBoxOpened.length) {
       print("열려라");
       setState(() {
         isBoxOpened[index] = true; // 상자 열림 상태로 변경
       });
-    // }
+    } else {
+      print("잘못된 인덱스 접근");
+    }
   }
 
   @override
@@ -46,9 +51,9 @@ class _NumberBoxGameState extends State<NumberBoxGame> {
       appBar: AppBar(
         title: Text('Number Box Game'),
       ),
-      body: numberOfBoxes == null || numberOfBoxes == 0
-          ? _buildSettingsScreen() // 상자 수 설정 화면
-          : _buildGameScreen(), // 게임 화면
+      body: gameStarted
+          ? _buildGameScreen() // 게임 화면으로 전환
+          : _buildSettingsScreen(), // 상자 수 설정 화면
     );
   }
 
@@ -71,6 +76,7 @@ class _NumberBoxGameState extends State<NumberBoxGame> {
             onChanged: (value) {
               setState(() {
                 numberOfBoxes = value; // 선택된 값으로 설정
+                print("선택된 상자 수: $numberOfBoxes");
               });
             },
           ),
