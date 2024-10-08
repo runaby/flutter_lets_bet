@@ -48,16 +48,22 @@ class MainScreen extends StatelessWidget {
               String gameName;
               switch (index) {
                 case 0:
-                  gameName = '꽝뽑기'; // 1번 아이콘 이름
+                  gameName = '꽝뽑기';
                   break;
                 case 1:
-                  gameName = '주사위'; // 2번 아이콘 이름
+                  gameName = '주사위';
                   break;
                 case 2:
-                  gameName = '화살표'; // 2번 아이콘 이름
+                  gameName = '화살표';
                   break;
                 case 3:
-                  gameName = '번호뽑기'; // 2번 아이콘 이름
+                  gameName = '순서정하기';
+                  break;
+                case 4:
+                  gameName = '6/45로또';
+                  break;
+                case 5:
+                  gameName = '홀/짝';
                   break;
                 default:
                   gameName = 'Game ${index + 1}'; // 나머지 임의 이름
