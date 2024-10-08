@@ -65,6 +65,7 @@ flutter:
     - assets/stick_game_lose_background.png
     - assets/arrow_game_background.png
     - assets/number_box_background_image.png
+    - assets/lottery_jackpot_background.png
     
     
     - assets/sounds/stick_sound.mp3

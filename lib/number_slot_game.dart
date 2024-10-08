@@ -13,6 +13,7 @@ class _NumberSlotMachineGameState extends State<NumberSlotMachineGame> {
   Timer? timer; // 숫자가 돌아가는 타이머
   Random random = Random();
   String sortedNumbersText = ''; // 정렬된 숫자 텍스트
+  bool isGameActive = true; // 게임이 활성화된 상태
 
   @override
   void initState() {
@@ -29,22 +30,43 @@ class _NumberSlotMachineGameState extends State<NumberSlotMachineGame> {
     });
   }
 
+  // 슬롯머신 멈춤
+  void _stopSpinning() {
+    if (timer != null) {
+      timer!.cancel(); // 타이머 멈추기
+    }
+  }
+
   // 터치 시 숫자 고정 (최대 6개까지)
   void _selectNumber() {
     setState(() {
-      if (selectedNumbers.length < 6) {
-        selectedNumbers.add(displayedNumber); // 숫자 배열에 추가
-      } else {
-        selectedNumbers.clear(); // 숫자가 6개가 넘으면 배열 초기화
-        selectedNumbers.add(displayedNumber); // 새 숫자 추가
-        sortedNumbersText = ''; // 텍스트 초기화
-      }
+      if (isGameActive) {
+        // 게임이 활성화된 상태에서만 숫자 선택
+        if (selectedNumbers.length < 6) {
+          selectedNumbers.add(displayedNumber); // 숫자 배열에 추가
+        }
 
-      // 숫자가 6개가 되었을 때 정렬된 상태로 텍스트에 표시
-      if (selectedNumbers.length == 6) {
-        List<int> sortedNumbers = List.from(selectedNumbers)..sort();
-        sortedNumbersText = '${sortedNumbers.join(', ')}';
+        // 숫자가 6개가 되었을 때
+        if (selectedNumbers.length == 6) {
+          _stopSpinning(); // 랜덤 숫자 멈춤
+          List<int> sortedNumbers = List.from(selectedNumbers)..sort();
+          sortedNumbersText = '${sortedNumbers.join(', ')}';
+          isGameActive = false; // 게임 비활성화
+        }
+      } else {
+        // 게임이 비활성화된 상태에서 터치하면 게임을 초기화
+        _resetGame();
       }
+    });
+  }
+
+  // 게임 초기화
+  void _resetGame() {
+    setState(() {
+      selectedNumbers.clear(); // 선택된 숫자 배열 초기화
+      sortedNumbersText = ''; // 정렬된 숫자 텍스트 초기화
+      isGameActive = true; // 게임 활성화
+      _startSpinning(); // 다시 숫자 돌아가게 시작
     });
   }
 
@@ -80,103 +102,124 @@ class _NumberSlotMachineGameState extends State<NumberSlotMachineGame> {
       appBar: AppBar(
         title: Text('Number Slot Machine'),
       ),
-      body: GestureDetector(
-        onTap: _selectNumber, // 화면 터치 시 숫자를 고정
-        child: Column(
-          children: [
-            // 상단 고정된 숫자 공간 (최대 6개) - 아래로 배치
-            SizedBox(height: 60),
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 20),
-              height: 100, // 상단 고정 높이
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly, // 숫자가 화면 가로에 맞게 배치
-                children: List.generate(6, (index) {
-                  return Container(
-                    width: numberWidth, // 숫자 하나의 가로 크기
-                    height: 60, // 숫자 하나의 세로 크기
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: index < selectedNumbers.length ? _getBallColor(selectedNumbers[index]) : Colors.grey[300],
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          offset: Offset(4, 4),
-                          blurRadius: 6,
+      body: Stack(
+        children: [
+          // 배경 이미지 추가
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/lottery_jackpot_background.png'), // 배경 이미지 경로
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: _selectNumber, // 화면 터치 시 숫자를 고정
+            child: Column(
+              children: [
+                // 상단 고정된 숫자 공간 (최대 6개) - 반투명
+                SizedBox(height: 60),
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  height: 100, // 상단 고정 높이
+                  color: Colors.white.withOpacity(0.7), // 반투명 효과
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly, // 숫자가 화면 가로에 맞게 배치
+                    children: List.generate(6, (index) {
+                      return Container(
+                        width: numberWidth, // 숫자 하나의 가로 크기
+                        height: 60, // 숫자 하나의 세로 크기
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: index < selectedNumbers.length ? _getBallColor(selectedNumbers[index]) : Colors.grey[300],
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              offset: Offset(4, 4),
+                              blurRadius: 6,
+                            ),
+                          ],
                         ),
-                      ],
+                        child: index < selectedNumbers.length
+                            ? Text(
+                                '${selectedNumbers[index]}',
+                                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+                              )
+                            : Text(
+                                '', // 빈 칸
+                                style: TextStyle(fontSize: 24),
+                              ),
+                      );
+                    }),
+                  ),
+                ),
+
+                // 정렬된 숫자 텍스트 표시 (숫자가 6개일 때만) - 검정색 배경
+                if (sortedNumbersText.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7), // 검정색 배경
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        sortedNumbersText,
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
                     ),
-                    child: index < selectedNumbers.length
-                        ? Text(
-                            '${selectedNumbers[index]}',
-                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-                          )
-                        : Text(
-                            '', // 빈 칸
-                            style: TextStyle(fontSize: 24),
-                          ),
-                  );
-                }),
-              ),
-            ),
-
-            // 정렬된 숫자 텍스트 표시 (숫자가 6개일 때만)
-            if (sortedNumbersText.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: Text(
-                  sortedNumbersText,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
-                ),
-              ),
-
-            Spacer(), // 빈 공간을 추가해 아래로 내림
-
-            // 숫자 슬롯머신 (동그라미 모양) - 입체감 추가
-            Container(
-              width: 200,
-              height: 200,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: _getBallColor(displayedNumber), // 번호에 맞는 색상 적용
-                shape: BoxShape.circle, // 동그라미 모양
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black54,
-                    offset: Offset(6, 6),
-                    blurRadius: 10,
                   ),
-                  BoxShadow(
-                    color: Colors.white.withOpacity(0.5),
-                    offset: Offset(-6, -6),
-                    blurRadius: 10,
+
+                // 고정된 공 위치 (Spacer 대신 SizedBox 사용) - 반투명
+                SizedBox(height: 80), // 공과 정렬 텍스트 사이의 고정된 공간
+                Container(
+                  width: 200,
+                  height: 200,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: _getBallColor(displayedNumber).withOpacity(0.7), // 반투명 효과 추가
+                    shape: BoxShape.circle, // 동그라미 모양
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black54,
+                        offset: Offset(6, 6),
+                        blurRadius: 10,
+                      ),
+                      BoxShadow(
+                        color: Colors.white.withOpacity(0.5),
+                        offset: Offset(-6, -6),
+                        blurRadius: 10,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Text(
-                '$displayedNumber',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 80,
-                  fontWeight: FontWeight.bold,
+                  child: Text(
+                    '$displayedNumber',
+                    style: TextStyle(
+                      color: Colors.black, // 검정색 숫자
+                      fontSize: 80,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
-            ),
 
-            Spacer(), // 빈 공간을 추가해 아래로 내림
+                SizedBox(height: 50), // 공과 하단 사이 고정된 공간
 
-            // 하단에 터치 안내
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20.0),
-              child: Text(
-                '공을 터치하세요!',
-                style: TextStyle(fontSize: 20, color: Colors.grey),
-              ),
+                // 하단에 터치 안내
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20.0),
+                  child: Text(
+                    isGameActive ? '공을 터치하세요!' : '다시 터치하여 재시작하세요!',
+                    style: TextStyle(fontSize: 20, color: Colors.grey),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
+
