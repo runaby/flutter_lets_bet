@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lets_bet/arrow_game.dart';
 import 'package:flutter_lets_bet/dice_game.dart';
 import 'package:flutter_lets_bet/number_box_games.dart';
+import 'package:flutter_lets_bet/number_slot_game.dart';
 import 'stick_game.dart';
 
 void main() {
@@ -47,10 +48,16 @@ class MainScreen extends StatelessWidget {
               String gameName;
               switch (index) {
                 case 0:
-                  gameName = '뽑기'; // 1번 아이콘 이름
+                  gameName = '꽝뽑기'; // 1번 아이콘 이름
                   break;
                 case 1:
                   gameName = '주사위'; // 2번 아이콘 이름
+                  break;
+                case 2:
+                  gameName = '화살표'; // 2번 아이콘 이름
+                  break;
+                case 3:
+                  gameName = '번호뽑기'; // 2번 아이콘 이름
                   break;
                 default:
                   gameName = 'Game ${index + 1}'; // 나머지 임의 이름
@@ -84,6 +91,13 @@ class MainScreen extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => NumberBoxGame(), // 주사위 게임
+                      ),
+                    );
+                  }else if (index == 4) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NumberSlotMachineGame(), // 주사위 게임
                       ),
                     );
                   }

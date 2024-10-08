@@ -42,8 +42,17 @@ class _NumberBoxGameState extends State<NumberBoxGame> {
     return Color((random.nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0);
   }
 
-  // 게임을 새로고침 (새로 시작)
+  // 게임을 새로고침 (다시 시작, 선택한 갯수 그대로 유지)
   void _restartGame() {
+    if (numberOfBoxes != null) {
+      setState(() {
+        _startGame(); // 다시 시작시 갯수 그대로 유지
+      });
+    }
+  }
+
+  // 설정 화면으로 돌아가기
+  void _goToSettings() {
     setState(() {
       gameStarted = false;
       numberOfBoxes = null;
@@ -60,8 +69,12 @@ class _NumberBoxGameState extends State<NumberBoxGame> {
         title: Text('Number Box Game'),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: _restartGame, // 새로고침 버튼으로 게임 새로 시작
+            icon: Icon(Icons.refresh), // 다시 시작 아이콘
+            onPressed: _restartGame, // 선택한 갯수로 게임 다시 시작
+          ),
+          IconButton(
+            icon: Icon(Icons.settings), // 설정 아이콘
+            onPressed: _goToSettings, // 설정 화면으로 이동 (갯수 선택)
           ),
         ],
       ),
