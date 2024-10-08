@@ -88,9 +88,13 @@ class _NumberBoxGameState extends State<NumberBoxGame> {
 
   // 게임 화면 (상자들이 나열된 화면)
   Widget _buildGameScreen() {
-    // 화면 높이를 가져와서 상자 수에 맞게 분배
+    // 화면 높이 계산 (앱바 및 마진 고려)
     final screenHeight = MediaQuery.of(context).size.height;
-    final boxHeight = screenHeight / numberOfBoxes!; // 각 상자의 높이를 화면 높이로 나눈 값
+    final appBarHeight = AppBar().preferredSize.height;
+    final verticalMargin = 20.0; // 상자 간 여백 (상하 마진)
+    final availableHeight = screenHeight - appBarHeight - (verticalMargin * numberOfBoxes!);
+
+    final boxHeight = availableHeight / numberOfBoxes!; // 각 상자의 높이를 계산
 
     return Column(
       children: List.generate(numberOfBoxes!, (index) {
@@ -98,7 +102,7 @@ class _NumberBoxGameState extends State<NumberBoxGame> {
           onTap: () => _openBox(index), // 상자 클릭 시 열기
           child: Container(
             height: boxHeight, // 각 상자의 높이를 화면 비율에 맞춤
-            margin: EdgeInsets.all(10),
+            margin: EdgeInsets.symmetric(vertical: verticalMargin / 2, horizontal: 10),
             decoration: BoxDecoration(
               color: (isBoxOpened.isNotEmpty && index < isBoxOpened.length && isBoxOpened[index])
                   ? Colors.green
