@@ -15,14 +15,14 @@ class _NumberBoxGameState extends State<NumberBoxGame> {
 
   // 게임 시작 시 설정된 숫자를 상자에 할당
   void _startGame() {
-    print('스타트 게임 실행됨');
+    print('게임 시작');
     if (numberOfBoxes != null && numberOfBoxes! > 0) {
       setState(() {
         // 상자 숫자 리스트 생성 및 섞기
         boxNumbers = List.generate(numberOfBoxes!, (index) => index + 1);
         boxNumbers.shuffle(); // 상자에 들어갈 숫자를 랜덤하게 섞음
         isBoxOpened = List.generate(numberOfBoxes!, (index) => false); // 상자 닫힌 상태로 초기화
-        gameStarted = true; // 게임 시작 상태 변경
+        gameStarted = true; // 게임 시작 상태로 변경
         print("boxNumbers length: ${boxNumbers.length}");
         print("isBoxOpened length: ${isBoxOpened.length}");
       });
@@ -77,12 +77,9 @@ class _NumberBoxGameState extends State<NumberBoxGame> {
               setState(() {
                 numberOfBoxes = value; // 선택된 값으로 설정
                 print("선택된 상자 수: $numberOfBoxes");
+                _startGame(); // 선택 후 바로 게임 시작
               });
             },
-          ),
-          ElevatedButton(
-            onPressed: numberOfBoxes == null ? null : _startGame, // 상자 수가 선택된 후에만 게임 시작 가능
-            child: Text('게임 시작'),
           ),
         ],
       ),
@@ -91,13 +88,16 @@ class _NumberBoxGameState extends State<NumberBoxGame> {
 
   // 게임 화면 (상자들이 나열된 화면)
   Widget _buildGameScreen() {
-    return GridView.count(
-      crossAxisCount: 3, // 한 줄에 3개의 상자 표시
-      padding: EdgeInsets.all(20),
+    // 화면 높이를 가져와서 상자 수에 맞게 분배
+    final screenHeight = MediaQuery.of(context).size.height;
+    final boxHeight = screenHeight / numberOfBoxes!; // 각 상자의 높이를 화면 높이로 나눈 값
+
+    return Column(
       children: List.generate(numberOfBoxes!, (index) {
         return GestureDetector(
           onTap: () => _openBox(index), // 상자 클릭 시 열기
           child: Container(
+            height: boxHeight, // 각 상자의 높이를 화면 비율에 맞춤
             margin: EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: (isBoxOpened.isNotEmpty && index < isBoxOpened.length && isBoxOpened[index])
