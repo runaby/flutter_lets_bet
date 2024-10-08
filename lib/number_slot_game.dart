@@ -25,7 +25,7 @@ class _NumberSlotMachineGameState extends State<NumberSlotMachineGame> {
   void _startSpinning() {
     timer = Timer.periodic(Duration(milliseconds: 100), (timer) {
       setState(() {
-        displayedNumber = random.nextInt(45) + 1; // 1부터 45 사이의 숫자를 표시
+        displayedNumber = _getUniqueRandomNumber(); // 중복되지 않는 숫자를 선택
       });
     });
   }
@@ -37,13 +37,22 @@ class _NumberSlotMachineGameState extends State<NumberSlotMachineGame> {
     }
   }
 
-  // 터치 시 숫자 고정 (최대 6개까지)
+  // 중복되지 않는 랜덤 숫자 생성 함수
+  int _getUniqueRandomNumber() {
+    int newNumber;
+    do {
+      newNumber = random.nextInt(45) + 1; // 1부터 45 사이의 랜덤 숫자
+    } while (selectedNumbers.contains(newNumber)); // 중복이 되면 다시 숫자 선택
+    return newNumber;
+  }
+
+  // 터치 시 숫자 고정 (최대 6개까지, 중복 방지)
   void _selectNumber() {
     setState(() {
       if (isGameActive) {
         // 게임이 활성화된 상태에서만 숫자 선택
         if (selectedNumbers.length < 6) {
-          selectedNumbers.add(displayedNumber); // 숫자 배열에 추가
+          selectedNumbers.add(displayedNumber); // 중복되지 않는 숫자를 배열에 추가
         }
 
         // 숫자가 6개가 되었을 때
@@ -133,7 +142,7 @@ class _NumberSlotMachineGameState extends State<NumberSlotMachineGame> {
                         decoration: BoxDecoration(
                           color: index < selectedNumbers.length ? _getBallColor(selectedNumbers[index]) : Colors.grey[300],
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.amberAccent, width: 2), // 금색 테두리 추가
+                          border: Border.all(color: Colors.amberAccent, width: 1), // 금색 테두리 추가
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black26,
@@ -180,9 +189,9 @@ class _NumberSlotMachineGameState extends State<NumberSlotMachineGame> {
                   height: 200,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: _getBallColor(displayedNumber).withOpacity(0.9), // 반투명 효과 추가
+                    color: _getBallColor(displayedNumber).withOpacity(0.7), // 반투명 효과 추가
                     shape: BoxShape.circle, // 동그라미 모양
-                    // border: Border.all(color: Colors.amberAccent, width: 3), // 금색 테두리 추가
+                    border: Border.all(color: Colors.amberAccent, width: 1), // 금색 테두리 추가
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black54,
@@ -211,7 +220,8 @@ class _NumberSlotMachineGameState extends State<NumberSlotMachineGame> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20.0),
                   child: Text(
-                    isGameActive ? '공을 터치하세요!' : '다시 터치하여 재시작하세요!',
+                    //isGameActive ? '공을 터치하세요!' : '다시 터치하여 재시작하세요!',
+                    '',
                     style: TextStyle(fontSize: 20, color: Colors.grey),
                   ),
                 ),
