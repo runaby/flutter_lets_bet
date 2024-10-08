@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lets_bet/arrow_game.dart';
 import 'package:flutter_lets_bet/dice_game.dart';
-import 'package:flutter_lets_bet/pairing_game.dart';
+import 'package:flutter_lets_bet/number_box_games.dart';
 import 'stick_game.dart';
 
 void main() {
@@ -83,7 +83,7 @@ class MainScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PairingGame(), // 주사위 게임
+                        builder: (context) => NumberBoxGame(), // 주사위 게임
                       ),
                     );
                   }
