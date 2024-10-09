@@ -133,7 +133,7 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
     }
 
     setState(() {
-      // isCountingDown = false;
+      //isCountingDown = false;
     });
 
     // 애니메이션이 완료되면 gameEnded = true로 설정
