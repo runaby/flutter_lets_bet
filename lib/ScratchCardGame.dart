@@ -50,8 +50,8 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
           if (!gameEnded) // 게임이 종료되지 않았을 때만 터치 감지
             Listener(
               onPointerDown: (PointerDownEvent event) {
-                if (touchPoints.isEmpty) {
-                  _startCountdown();
+                if (!isCountingDown && touchPoints.isEmpty) {
+                  _startCountdown(); // 카운팅이 시작되지 않았을 때만 카운팅 시작
                 }
                 if (!isCountingDown || isCountingDown) {
                   setState(() {
@@ -118,6 +118,7 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
         selectedPosition = touchPoints.values.elementAt(randomIndex); // 선택된 손가락의 위치
         touchPoints.clear(); // 다른 손가락 위치 제거
         touchColors.clear(); // 다른 색상 제거
+        // gameEnded = true; // 게임 종료
       });
 
       // 선택된 색상이 부드럽게 퍼지도록 애니메이션 시작
