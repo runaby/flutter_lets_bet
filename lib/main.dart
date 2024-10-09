@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lets_bet/ScratchCardGame.dart';
 import 'package:flutter_lets_bet/arrow_game.dart';
 import 'package:flutter_lets_bet/dice_game.dart';
 import 'package:flutter_lets_bet/number_box_games.dart';
@@ -111,7 +112,7 @@ class MainScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => FlipCardGame(), // 주사위 게임
+                        builder: (context) => ColorTouchGame(), // 주사위 게임
                       ),
                     );
                   }
