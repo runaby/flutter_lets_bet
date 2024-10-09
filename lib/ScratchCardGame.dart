@@ -10,6 +10,7 @@ class ColorTouchGame extends StatefulWidget {
 class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProviderStateMixin {
   Map<int, Offset> touchPoints = {}; // 터치된 위치를 저장하는 맵 (멀티 터치 지원)
   Map<int, Color> touchColors = {};  // 터치마다 랜덤 색상 리스트
+  Set<Color> usedColors = {}; // 이미 사용된 색상을 저장하는 집합
   bool isCountingDown = false; // 카운트다운 상태
   bool gameEnded = false; // 게임 종료 여부
   Timer? countdownTimer; // 5초 카운트다운 타이머
@@ -37,12 +38,6 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
     return Scaffold(
       appBar: AppBar(
         title: Text('Multi-Touch the Screen'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: _restartGame, // 다시 시작 버튼
-          ),
-        ],
       ),
       body: Stack(
         children: [
@@ -53,12 +48,10 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
                 if (!isCountingDown && touchPoints.isEmpty) {
                   _startCountdown(); // 카운팅이 시작되지 않았을 때만 카운팅 시작
                 }
-                if (!isCountingDown || isCountingDown) {
-                  setState(() {
-                    touchPoints[event.pointer] = event.localPosition;
-                    touchColors[event.pointer] = _getRandomColor();
-                  });
-                }
+                setState(() {
+                  touchPoints[event.pointer] = event.localPosition;
+                  touchColors[event.pointer] = _getUniqueRandomColor(); // 중복되지 않는 색상 추가
+                });
               },
               onPointerMove: (PointerMoveEvent event) {
                 setState(() {
@@ -66,10 +59,13 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
                 });
               },
               onPointerUp: (PointerUpEvent event) {
-                setState(() {
-                  touchPoints.remove(event.pointer);
-                  touchColors.remove(event.pointer);
-                });
+                if (!gameEnded) { // 게임이 종료되지 않았을 때만 터치된 손가락 제거
+                  setState(() {
+                    touchPoints.remove(event.pointer);
+                    usedColors.remove(touchColors[event.pointer]); // 사용된 색상 해제
+                    touchColors.remove(event.pointer);
+                  });
+                }
               },
               child: CustomPaint(
                 size: Size.infinite,
@@ -77,12 +73,22 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
                     touchPoints, touchColors, selectedColor, selectedPosition, _colorSpreadAnimation.value),
               ),
             ),
+          
           // 중앙에 카운트다운 숫자 표시
           if (isCountingDown && !gameEnded)
             Center(
               child: Text(
                 '$countdownValue',
                 style: TextStyle(fontSize: 60, fontWeight: FontWeight.bold, color: Colors.red),
+              ),
+            ),
+
+          // 게임 종료 후 다시 시작 버튼 표시
+          if (gameEnded)
+            Center(
+              child: ElevatedButton(
+                onPressed: _restartGame,
+                child: Text('다시 시작', style: TextStyle(fontSize: 24)),
               ),
             ),
         ],
@@ -139,13 +145,12 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
     });
   }
   
-
-
   // 게임을 다시 시작하는 함수
   void _restartGame() {
     setState(() {
       touchPoints.clear();
       touchColors.clear();
+      usedColors.clear(); // 사용된 색상도 초기화
       selectedColor = null;
       selectedPosition = null;
       isCountingDown = false;
@@ -155,15 +160,21 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
     });
   }
 
-  // 랜덤 색상 생성 함수
-  Color _getRandomColor() {
+  // 중복되지 않는 랜덤 색상 생성 함수
+  Color _getUniqueRandomColor() {
     Random random = Random();
-    return Color.fromARGB(
-      255,
-      random.nextInt(256),
-      random.nextInt(256),
-      random.nextInt(256),
-    );
+    Color color;
+    do {
+      color = Color.fromARGB(
+        255,
+        random.nextInt(256),
+        random.nextInt(256),
+        random.nextInt(256),
+      );
+    } while (usedColors.contains(color)); // 이미 사용된 색상인지 확인
+
+    usedColors.add(color); // 사용된 색상 목록에 추가
+    return color;
   }
 
   @override
@@ -189,7 +200,7 @@ class MultiTouchPainter extends CustomPainter {
     if (selectedColor != null && selectedPosition != null) {
       // 선택된 손가락의 위치에서 색상이 부드럽게 퍼짐
       Paint paint = Paint()
-        ..color = selectedColor!.withOpacity(1 - spreadValue)
+        ..color = selectedColor!
         ..style = PaintingStyle.fill;
 
       double spreadRadius = spreadValue * max(size.width, size.height) * 2;
@@ -210,4 +221,3 @@ class MultiTouchPainter extends CustomPainter {
     return true;
   }
 }
-
