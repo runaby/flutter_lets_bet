@@ -44,7 +44,8 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
           // 터치 감지 및 색상 퍼짐 애니메이션 적용
           Listener(
             onPointerDown: (PointerDownEvent event) {
-              if (!isCountingDown && touchPoints.isEmpty) {
+              // 카운트다운이 시작되지 않았을 때만 시작
+              if (!isCountingDown && !gameEnded && touchPoints.isEmpty) {
                 _startCountdown(); // 카운팅이 시작되지 않았을 때만 카운팅 시작
               }
               if (!gameEnded) { // 게임 종료 후에는 추가 터치를 막음
@@ -78,7 +79,7 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
           ),
           
           // 중앙에 카운트다운 숫자 표시
-          if (isCountingDown && !gameEnded)
+          if (isCountingDown && !gameEnded && countdownValue > -1)
             Center(
               child: Text(
                 '$countdownValue',
@@ -111,7 +112,7 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
         countdownValue--;
       });
 
-      if (countdownValue == 0) {
+      if (countdownValue == -1) {
         timer.cancel();
         _selectRandomFinger();
       }
@@ -125,8 +126,6 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
         int randomIndex = Random().nextInt(touchColors.length);
         selectedColor = touchColors.values.elementAt(randomIndex); // 랜덤 색상 선택
         selectedPosition = touchPoints.values.elementAt(randomIndex); // 선택된 손가락의 위치
-        // touchPoints.clear(); // 다른 손가락 위치 제거
-        // touchColors.clear(); // 다른 색상 제거
       });
 
       // 선택된 색상이 부드럽게 퍼지도록 애니메이션 시작
@@ -134,13 +133,14 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
     }
 
     setState(() {
-      isCountingDown = false;
+      // isCountingDown = false;
     });
 
     // 애니메이션이 완료되면 gameEnded = true로 설정
   _animationController.addStatusListener((status) {
     if (status == AnimationStatus.completed) {
       setState(() {
+        isCountingDown = false;
         touchColors.clear(); // 다른 색상 제거
         gameEnded = true; // 애니메이션이 완료되면 게임 종료
         });
