@@ -199,3 +199,4 @@ class MultiTouchPainter extends CustomPainter {
     return true;
   }
 }
+
