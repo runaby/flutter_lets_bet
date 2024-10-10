@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lets_bet/ScratchCardGame.dart';
+import 'package:flutter_lets_bet/ColorTouchGame.dart';
+import 'package:flutter_lets_bet/TouchGame.dart';
 import 'package:flutter_lets_bet/arrow_game.dart';
 import 'package:flutter_lets_bet/dice_game.dart';
 import 'package:flutter_lets_bet/number_box_games.dart';
 import 'package:flutter_lets_bet/number_slot_game.dart';
-import 'package:flutter_lets_bet/flip_card_game.dart';
 import 'stick_game.dart';
 
 void main() {
@@ -109,6 +109,13 @@ class MainScreen extends StatelessWidget {
                       ),
                     );
                   }else if (index == 5) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TouchGame(), // 주사위 게임
+                      ),
+                    );
+                  }else if (index == 6) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(

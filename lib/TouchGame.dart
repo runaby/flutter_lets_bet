@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
 
-class ColorTouchGame extends StatefulWidget {
+class TouchGame extends StatefulWidget {
   @override
   _ColorTouchGameState createState() => _ColorTouchGameState();
 }
 
-class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProviderStateMixin {
+class _ColorTouchGameState extends State<TouchGame> with SingleTickerProviderStateMixin {
   Map<int, Offset> touchPoints = {}; // 터치된 위치를 저장하는 맵 (멀티 터치 지원)
   Map<int, Color> touchColors = {};  // 터치마다 랜덤 색상 리스트
   Set<Color> usedColors = {}; // 이미 사용된 색상을 저장하는 집합
