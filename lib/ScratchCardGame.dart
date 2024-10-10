@@ -126,6 +126,11 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
         int randomIndex = Random().nextInt(touchColors.length);
         selectedColor = touchColors.values.elementAt(randomIndex); // 랜덤 색상 선택
         selectedPosition = touchPoints.values.elementAt(randomIndex); // 선택된 손가락의 위치
+        //touchColors.clear(); //색상 번짐이 시작되면 다른 색상 제거
+
+        // 선택된 색상을 제외한 나머지 색상과 위치 제거
+        touchColors.removeWhere((key, value) => value != selectedColor);
+        touchPoints.removeWhere((key, value) => value != selectedPosition);
       });
 
       // 선택된 색상이 부드럽게 퍼지도록 애니메이션 시작
@@ -138,10 +143,11 @@ class _ColorTouchGameState extends State<ColorTouchGame> with SingleTickerProvid
 
     // 애니메이션이 완료되면 gameEnded = true로 설정
   _animationController.addStatusListener((status) {
+    
     if (status == AnimationStatus.completed) {
       setState(() {
         isCountingDown = false;
-        touchColors.clear(); // 다른 색상 제거
+        
         gameEnded = true; // 애니메이션이 완료되면 게임 종료
         });
       }
