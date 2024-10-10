@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lets_bet/BrickBreakerGame.dart';
 import 'package:flutter_lets_bet/ColorTouchGame.dart';
-import 'package:flutter_lets_bet/TouchGame.dart';
+import 'package:flutter_lets_bet/ShapeRevealGame.dart';
+import 'package:flutter_lets_bet/TouchMatchingGame.dart';
 import 'package:flutter_lets_bet/arrow_game.dart';
 import 'package:flutter_lets_bet/dice_game.dart';
 import 'package:flutter_lets_bet/number_box_games.dart';
 import 'package:flutter_lets_bet/number_slot_game.dart';
+
+
 import 'stick_game.dart';
 
 void main() {
@@ -65,7 +69,13 @@ class MainScreen extends StatelessWidget {
                   gameName = '6/45로또';
                   break;
                 case 5:
-                  gameName = '홀/짝';
+                  gameName = '한명뽑기';
+                  break;
+                case 6:
+                  gameName = '팀구성';
+                  break;
+                case 7:
+                  gameName = '도형맞추기';
                   break;
                 default:
                   gameName = 'Game ${index + 1}'; // 나머지 임의 이름
@@ -112,14 +122,28 @@ class MainScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => TouchGame(), // 주사위 게임
+                        builder: (context) => ColorTouchGame(), // 주사위 게임
                       ),
                     );
                   }else if (index == 6) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ColorTouchGame(), // 주사위 게임
+                        builder: (context) => TouchMatchingGame(), // 주사위 게임
+                      ),
+                    );
+                  }else if (index == 7) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EnergyBarGame(), // 주사위 게임
+                      ),
+                    );
+                  }else if (index == 8) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BrickBreakerGame(), // 주사위 게임
                       ),
                     );
                   }

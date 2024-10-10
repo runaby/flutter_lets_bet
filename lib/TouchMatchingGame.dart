@@ -2,42 +2,28 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
 
-class TouchGame extends StatefulWidget {
+class TouchMatchingGame extends StatefulWidget {
   @override
-  _ColorTouchGameState createState() => _ColorTouchGameState();
+  _TouchMatchingGameState createState() => _TouchMatchingGameState();
 }
 
-class _ColorTouchGameState extends State<TouchGame> with SingleTickerProviderStateMixin {
+class _TouchMatchingGameState extends State<TouchMatchingGame> {
   Map<int, Offset> touchPoints = {}; // 터치된 위치를 저장하는 맵 (멀티 터치 지원)
   Map<int, Color> touchColors = {};  // 터치마다 랜덤 색상 리스트
+  List<List<Offset>> pairs = []; // 짝을 저장할 리스트
   Set<Color> usedColors = {}; // 이미 사용된 색상을 저장하는 집합
   bool isCountingDown = false; // 카운트다운 상태
   bool gameEnded = false; // 게임 종료 여부
   Timer? countdownTimer; // 5초 카운트다운 타이머
   int countdownValue = 5; // 카운트다운 값
-  Color? selectedColor; // 선택된 색상 (화면을 덮을 색상)
-  Offset? selectedPosition; // 선택된 손가락의 위치
-  late AnimationController _animationController;
-  late Animation<double> _colorSpreadAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
-    _colorSpreadAnimation = Tween<double>(begin: 0, end: 1).animate(_animationController)
-      ..addListener(() {
-        setState(() {}); // 애니메이션 진행 시 화면 갱신
-      });
-  }
+  final double circleRadius = 40; // 원의 반지름
+  Random random = Random(); // 랜덤 매칭을 위한 Random 객체
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Multi-Touch the Screen'),
+        title: Text('Touch Pairing Game'),
       ),
       body: Stack(
         children: [
@@ -74,7 +60,7 @@ class _ColorTouchGameState extends State<TouchGame> with SingleTickerProviderSta
             child: CustomPaint(
               size: Size.infinite,
               painter: MultiTouchPainter(
-                  touchPoints, touchColors, selectedColor, selectedPosition, _colorSpreadAnimation.value, gameEnded),
+                touchPoints, touchColors, pairs, gameEnded, circleRadius),
             ),
           ),
           
@@ -114,64 +100,43 @@ class _ColorTouchGameState extends State<TouchGame> with SingleTickerProviderSta
 
       if (countdownValue == -1) {
         timer.cancel();
-        _selectRandomFinger();
+        _pairTouchPoints(); // 카운트다운이 끝나면 짝을 맺어줌
       }
     });
   }
 
-  // 5초 후 무작위 손가락 선택 함수
-  void _selectRandomFinger() {
-    if (touchColors.isNotEmpty) {
-      setState(() {
-        int randomIndex = Random().nextInt(touchColors.length);
-        selectedColor = touchColors.values.elementAt(randomIndex); // 랜덤 색상 선택
-        selectedPosition = touchPoints.values.elementAt(randomIndex); // 선택된 손가락의 위치
-        //touchColors.clear(); //색상 번짐이 시작되면 다른 색상 제거
+  // 터치 포인트를 짝으로 맺어주는 함수 (랜덤 매칭)
+  void _pairTouchPoints() {
+    List<Offset> pointsList = touchPoints.values.toList();
 
-        // 선택된 색상을 제외한 나머지 색상과 위치 제거
-        touchColors.removeWhere((key, value) => value != selectedColor);
-        touchPoints.removeWhere((key, value) => value != selectedPosition);
-      });
-
-      // 선택된 색상이 부드럽게 퍼지도록 애니메이션 시작
-      _animationController.forward(from: 0);
-    }
+    // 포인트 리스트를 무작위로 섞음
+    pointsList.shuffle(random);
 
     setState(() {
-      //isCountingDown = false;
-    });
-
-    // 애니메이션이 완료되면 gameEnded = true로 설정
-  _animationController.addStatusListener((status) {
-    
-    if (status == AnimationStatus.completed) {
-      setState(() {
-        isCountingDown = false;
-        
-        gameEnded = true; // 애니메이션이 완료되면 게임 종료
-        });
+      pairs.clear(); // 기존 짝을 초기화
+      for (int i = 0; i < pointsList.length - 1; i += 2) {
+        pairs.add([pointsList[i], pointsList[i + 1]]); // 두 개씩 짝을 맺어 추가
       }
+      
+      gameEnded = true; // 게임 종료
     });
   }
-  
+
   // 게임을 다시 시작하는 함수
   void _restartGame() {
     setState(() {
       touchPoints.clear();
       touchColors.clear();
       usedColors.clear(); // 사용된 색상도 초기화
-      selectedColor = null;
-      selectedPosition = null;
+      pairs.clear(); // 짝 목록 초기화
       isCountingDown = false;
       countdownValue = 5;
       gameEnded = false;
-      _animationController.reset(); // 애니메이션 초기화
     });
   }
 
   // 중복되지 않는 랜덤 색상 생성 함수
   Color _getUniqueRandomColor() {
-    Random random = Random();
     Color color;
     do {
       color = Color.fromARGB(
@@ -189,47 +154,65 @@ class _ColorTouchGameState extends State<TouchGame> with SingleTickerProviderSta
   @override
   void dispose() {
     countdownTimer?.cancel(); // 타이머 해제
-    _animationController.dispose(); // 애니메이션 컨트롤러 해제
     super.dispose();
   }
 }
 
-// 터치된 위치 및 선택된 색상에 대한 커스텀 페인터
+// 터치된 위치 및 짝을 그려줄 커스텀 페인터
 class MultiTouchPainter extends CustomPainter {
   final Map<int, Offset> points;
   final Map<int, Color> colors;
-  final Color? selectedColor;
-  final Offset? selectedPosition;
-  final double spreadValue;
+  final List<List<Offset>> pairs;
   final bool gameEnded;
+  final double circleRadius;
 
-  MultiTouchPainter(this.points, this.colors, this.selectedColor, this.selectedPosition, this.spreadValue, this.gameEnded);
+  MultiTouchPainter(this.points, this.colors, this.pairs, this.gameEnded, this.circleRadius);
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (selectedColor != null && selectedPosition != null) {
-      // 선택된 손가락의 위치에서 색상이 부드럽게 퍼짐
+    // 게임이 끝나기 전에도 터치된 손가락마다 원을 그리며, 터치마다 다른 색상 적용
+    points.forEach((key, point) {
       Paint paint = Paint()
-        ..color = selectedColor!
+        ..color = colors[key]!.withOpacity(0.8)
         ..style = PaintingStyle.fill;
+      canvas.drawCircle(point, circleRadius, paint); // 원의 크기를 작게 조정
+    });
 
-      double spreadRadius = spreadValue * max(size.width, size.height) * 2;
-      canvas.drawCircle(selectedPosition!, spreadRadius, paint);
-    }
+    // 게임이 종료되면 짝을 맺어주는 선을 그리기 (그라데이션 처리)
+    for (var pair in pairs) {
+      if (pair.length == 2) {
+        Color color1 = colors.values.elementAt(points.values.toList().indexOf(pair[0]));
+        Color color2 = colors.values.elementAt(points.values.toList().indexOf(pair[1]));
 
-    if (!gameEnded) { // 게임이 종료되면 추가 터치가 없게끔
-      // 각 손가락 위치에 원을 그리며, 터치마다 다른 색상 적용
-      points.forEach((key, point) {
-        Paint paint = Paint()
-          ..color = colors[key]!.withOpacity(0.8)
-          ..style = PaintingStyle.fill;
-        canvas.drawCircle(point, 80, paint); // 원의 크기를 100으로 키움 -> 80으로 조정
-      });
+        // 각 원의 중심에서 방향을 계산하고 원의 반지름만큼 이동하여 선을 그림
+        Offset direction1 = (pair[1] - pair[0]).normalize();
+        Offset direction2 = (pair[0] - pair[1]).normalize();
+
+        Offset start = pair[0] + direction1 * circleRadius;
+        Offset end = pair[1] + direction2 * circleRadius;
+
+        // 선을 그릴 때 일관된 방식으로 그라데이션을 적용
+        Paint gradientPaint = Paint()
+          ..shader = LinearGradient(
+            colors: [color1, color2], // 시작점과 끝점을 고정
+          ).createShader(Rect.fromPoints(start, end))
+          ..strokeWidth = 6.0; // 선의 굵기 설정
+
+        canvas.drawLine(start, end, gradientPaint); // 짝을 맺은 포인트들 사이에 그라데이션 선 그리기
+      }
     }
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
+  }
+}
+
+// Offset 방향을 구하는 확장 메서드
+extension Normalize on Offset {
+  Offset normalize() {
+    double length = this.distance;
+    return length == 0 ? this : this / length;
   }
 }
