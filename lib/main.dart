@@ -75,7 +75,7 @@ class MainScreen extends StatelessWidget {
                   gameName = '팀구성';
                   break;
                 case 7:
-                  gameName = '도형맞추기';
+                  gameName = '도형맞추기1';
                   break;
                 default:
                   gameName = 'Game ${index + 1}'; // 나머지 임의 이름
